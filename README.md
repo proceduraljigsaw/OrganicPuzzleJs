@@ -2,6 +2,7 @@
 
 This is a (pretty broken, but mostly functional) organic-shaped jigsaw generator with custom border support.
 It relies on two linbraries from third parties, imagetracerjs and flatten (see respective files).
+Use online at https://proceduraljigsaw.github.io/OrganicPuzzleJs/
 
 ## What is this
 
