@@ -8,7 +8,7 @@
     <script type="text/javascript" src="flatten.js"></script>
     <script type="text/javascript">
 
-        var xmldoc =null;
+        var xmldoc = null;
         function $(id) { return document.getElementById(id); }
         function random() {
             return Math.random();
@@ -55,8 +55,8 @@
         class Automata {
             constructor(rows, columns, border) {
                 if (border.paths) {
-                    columns = Math.ceil(border.width);
-                    rows = Math.ceil(border.height)
+                    columns = Math.ceil(border.width)+1;
+                    rows = Math.ceil(border.height)+1;
                 }
                 this.rows = rows;
                 this.columns = columns;
@@ -94,6 +94,7 @@
                 }
                 // console.log("V", minx, maxx, miny, maxy);
                 allpts.forEach((p) => {
+                    // console.log(this.borderdistgrid.length, this.borderdistgrid[0].length,p.x,p.y)
                     this.borderdistgrid[p.y][p.x] = p;
                     this.maskgrid[p.y][p.x] = 1;
 
@@ -168,7 +169,7 @@
 
                     }
                 }
-                $("piececount").innerHTML = val -1;
+                $("piececount").innerHTML = val - 1;
             }
 
             step(context, prefill) {
@@ -783,8 +784,8 @@
 <body>
     <table>
         <tr>
-            Need help? Check the github repository readme <a href="https://github.com/proceduraljigsaw/OrganicPuzzleJs">here</a>.
-           
+            Need help? Check the github repository readme <a
+                href="https://github.com/proceduraljigsaw/OrganicPuzzleJs">here</a>.
         </tr>
         <tr>
             <td>Columns:</td>
