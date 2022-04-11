@@ -239,15 +239,15 @@
                 neighbor_coords.forEach((nc) => {
                     let bg = this.borderdistgrid[nc.row][nc.col];
                     if (bg) {
-                        var len = bg.path.getTotalLength();
-                        for (let u = bg.u - 0.01; u <= bg.u + 0.01; u += 0.001) {
-                            let p = bg.path.getPointAtLength(u * len);
-                            d = Math.hypot(p.x - corner.col, p.y - corner.row)
-                            if (d < mind) {
-                                mind = d;
-                                cp = { x: p.x, y: p.y };
-                            }
+                        // var len = bg.path.getTotalLength();
+                        // for (let u = bg.u - 0.01; u <= bg.u + 0.01; u += 0.005) {
+                        //     let p = bg.path.getPointAtLength(u * len);
+                        d = Math.hypot(bg.rx - corner.col,bg.ry - corner.row)
+                        if (d < mind) {
+                            mind = d;
+                            cp = { x: bg.rx, y: bg.ry };
                         }
+                        // }
                     }
                 });
 
@@ -304,7 +304,7 @@
                                 var cr = c[0] > 0 ? c[0] : 0;
                                 var cc = c[1] > 0 ? c[1] : 0;
                                 var onborder = distinct.includes(0);
-                                corner_cand.push({ row: i + cr, col: j + cc, customborder: onborder });
+                                corner_cand.push({ row: i + cr, col: j + cc, onborder: onborder });
                             }
                         });
 
@@ -317,7 +317,7 @@
                 this.cornertable = [];
                 if (customborder.paths) {
                     corners.forEach((c) => {
-                        if (c.customborder) {
+                        if (c.onborder) {
                             var mind = 2e9;
                             var newp = { x: c.col, y: c.row };
                             for (let p of customborder.paths) {
