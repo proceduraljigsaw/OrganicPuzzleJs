@@ -55,8 +55,8 @@
         class Automata {
             constructor(rows, columns, border) {
                 if (border.paths) {
-                    columns = Math.ceil(border.width)+1;
-                    rows = Math.ceil(border.height)+1;
+                    columns = Math.ceil(border.width) + 1;
+                    rows = Math.ceil(border.height) + 1;
                 }
                 this.rows = rows;
                 this.columns = columns;
@@ -70,6 +70,7 @@
                 this.cornergrid = Array2D(rows, columns);
                 this.maskgrid = Array2D(rows, columns);
                 this.borderdistgrid = Array2D(rows, columns);
+                this.lockedgrid = Array2D(rows, columns);
                 if (border.paths) {
                     this.fillmask(border.paths);
                 }
@@ -174,12 +175,20 @@
 
             step(context, prefill) {
                 var growth = []
-
+                var growthdistchanged = (this.max_growth_dist != parseInt($("gradius").value));
                 var ii = Math.floor(uniform(0, this.rows));
                 var ij = Math.floor(uniform(0, this.columns));
                 var fi = ii + this.rows;
                 var fj = ij + this.columns;
                 var reverse = rbool() && !prefill;
+                if (growthdistchanged) {
+                    for (var i = 0; i < this.rows; i++) {
+                        for (var j = 0; j < this.columns; j++) {
+                            this.lockedgrid[i][j] = 0;
+                        }
+                    }
+                }
+                this.max_growth_dist = parseInt($("gradius").value);
                 if (prefill) {
                     ii = 0;
                     ij = 0;
@@ -191,7 +200,7 @@
                         for (var j = fj - 1; j >= ij; j--) {
                             var ti = i % this.rows;
                             var tj = j % this.columns;
-                            if (this.grid[ti][tj] > 0) {
+                            if (this.grid[ti][tj] > 0 && !this.lockedgrid[ti][tj]) {
                                 this.grow(ti, tj, growth, context, prefill);
                             }
                         }
@@ -201,7 +210,7 @@
                         for (var j = ij; j < fj; j++) {
                             var ti = i % this.rows;
                             var tj = j % this.columns;
-                            if (this.grid[ti][tj] > 0) {
+                            if (this.grid[ti][tj] > 0 && !this.lockedgrid[ti][tj]) {
                                 this.grow(ti, tj, growth, context, prefill);
                             }
                         }
@@ -209,6 +218,10 @@
                 }
                 growth.forEach((grow) => {
                     this.grid[grow.row][grow.col] = grow.val;
+                    var neigh = this.neighbor_coords(grow.row, grow.col)
+                    neigh.forEach((n) => {
+                        this.lockedgrid[n.row][n.col] = 0;
+                    });
                 });
                 // if (!prefill) {
                 //     this.edgefind(context);
@@ -330,7 +343,6 @@
                 var sc_neigh = 0;
                 var sc_neigh_in_corner = 0;
                 var other_color = 0;
-                this.max_growth_dist = parseInt($("gradius").value);
                 neigh_coord.forEach((neighbor) => {
                     if (this.grid[neighbor.row][neighbor.col]) {
                         if (Math.abs(this.grid[neighbor.row][neighbor.col]) == currentcellval) {
@@ -343,65 +355,72 @@
                         }
                     }
                 });
-                if (!prefill && sc_neigh < 3) {
-                    //Cell dies immediately if it's alone (2 neighbors of the same color or less) We don't want it to grow
-                    //This avoids issues with spurious growth
-                    if (sc_neigh_in_corner == sc_neigh && !this.maskgrid[row][col]) {
-                        this.grid[row][col] = -other_color;
-                        growth.push({ row: row, col: col, val: other_color });
-                    }
-                } else if (prefill || Math.random() < parseFloat($("growth_prob").value)) {
-                    //We have enough neighbors, explore them
-                    neigh_coord.forEach((neighbor) => {
+                if (sc_neigh == neigh_coord.length) {
+                    this.lockedgrid[row][col] = 1;
+                } else {
+                    if (!prefill && sc_neigh < 3) {
+                        //Cell dies immediately if it's alone (2 neighbors of the same color or less) We don't want it to grow
+                        //This avoids issues with spurious growth
+                        if (sc_neigh_in_corner == sc_neigh && !this.maskgrid[row][col]) {
+                            this.grid[row][col] = -other_color;
+                            growth.push({ row: row, col: col, val: other_color });
+                        }
+                    } else if (prefill || Math.random() < parseFloat($("growth_prob").value)) {
+                        //We have enough neighbors, explore them
+                        neigh_coord.forEach((neighbor) => {
 
-                        if (prefill || neighbor.row == row || neighbor.col == col) {
-                            var dist2seed = Math.sqrt((neighbor.row - seed.row) ** 2 + (neighbor.col - seed.col) ** 2);
-                            var neighborval = this.grid[neighbor.row][neighbor.col];
+                            if (prefill || neighbor.row == row || neighbor.col == col) {
+                                var dist2seed = Math.sqrt((neighbor.row - seed.row) ** 2 + (neighbor.col - seed.col) ** 2);
+                                var neighborval = this.grid[neighbor.row][neighbor.col];
 
-                            if (!this.maskgrid[neighbor.row][neighbor.col] && (prefill || (dist2seed < this.max_growth_dist))) {
-                                //We're close enough to the seed point, lets try to grow
+                                if (!this.maskgrid[neighbor.row][neighbor.col] && (prefill || (dist2seed < this.max_growth_dist))) {
+                                    //We're close enough to the seed point, lets try to grow
 
-                                if (!neighborval) { //neighbor is empty 
-                                    //Just eat it  
-                                    growth.push({ row: neighbor.row, col: neighbor.col, val: currentcellval });
-                                    grown.push({ row: neighbor.row, col: neighbor.col });
-                                } else if (!prefill && neighborval > 0 && (Math.abs(currentcellval) != Math.abs(neighborval))) { //neighbor is taken by other piece
-                                    //see if we can kill it and overtake
-                                    var nnc = this.neighbor_coords(neighbor.row, neighbor.col);
-                                    //get neighbor's neighbors of the same color;
-                                    nnc = nnc.filter(nn => (Math.abs(this.grid[nn.row][nn.col]) == neighborval));
-                                    var nnc_len = nnc.length;
-                                    if (nnc_len > 2 && nnc_len < 6) {
-                                        var nnnc_len = 0;
-                                        nnc.forEach((n) => {
-                                            var nnnc = this.neighbor_coords(n.row, n.col);
-                                            nnnc = nnnc.filter(nn => (Math.abs(this.grid[nn.row][nn.col]) == neighborval));
-                                            nnnc_len += nnnc.length;
-                                        });
+                                    if (!neighborval) { //neighbor is empty 
+                                        //Just eat it  
+                                        growth.push({ row: neighbor.row, col: neighbor.col, val: currentcellval });
+                                        grown.push({ row: neighbor.row, col: neighbor.col });
+                                    } else if (!prefill && neighborval > 0 && (Math.abs(currentcellval) != Math.abs(neighborval))) { //neighbor is taken by other piece
+                                        //see if we can kill it and overtake
+                                        var nnc = this.neighbor_coords(neighbor.row, neighbor.col);
+                                        //get neighbor's neighbors of the same color;
+                                        nnc = nnc.filter(nn => (Math.abs(this.grid[nn.row][nn.col]) == neighborval));
+                                        var nnc_len = nnc.length;
+                                        if (nnc_len > 2 && nnc_len < 6) {
+                                            var nnnc_len = 0;
+                                            nnc.forEach((n) => {
+                                                var nnnc = this.neighbor_coords(n.row, n.col);
+                                                nnnc = nnnc.filter(nn => (Math.abs(this.grid[nn.row][nn.col]) == neighborval));
+                                                nnnc_len += nnnc.length;
+                                            });
 
 
-                                        //I don't know how the 6.2 thing works, but it seems to work. This algorithm was empirically found
-                                        if (nnnc_len / nnc_len > parseFloat($("mnumber").value)) {
-                                            //console.log(nnnc_len + " " + nnc_len + " " + neighborval);
-                                            growth.push({ row: neighbor.row, col: neighbor.col, val: currentcellval });
-                                            grown.push({ row: neighbor.row, col: neighbor.col });
+                                            //I don't know how the 6.2 thing works, but it seems to work. This algorithm was empirically found
+                                            if (nnnc_len / nnc_len > parseFloat($("mnumber").value)) {
+                                                //console.log(nnnc_len + " " + nnc_len + " " + neighborval);
+                                                growth.push({ row: neighbor.row, col: neighbor.col, val: currentcellval });
+                                                grown.push({ row: neighbor.row, col: neighbor.col });
+                                            }
                                         }
                                     }
-                                }
 
+                                }
                             }
+                        });
+                        if (!prefill && grown.length == 0) {
+                            this.lockedgrid[row][col] = 1;
                         }
+                    }
+
+                    //TODO: If your only growth is a corner, don't grow DONE
+                    if (grown.length == 1 && grown[0].row != row && grown[0].col != col) {
+                        grown = [];
+                        growth.pop();
+                    }
+                    grown.forEach((grow) => {
+                        this.grid[grow.row][grow.col] = -this.grid[row][col];
                     });
                 }
-
-                //TODO: If your only growth is a corner, don't grow DONE
-                if (grown.length == 1 && grown[0].row != row && grown[0].col != col) {
-                    grown = [];
-                    growth.pop();
-                }
-                grown.forEach((grow) => {
-                    this.grid[grow.row][grow.col] = -this.grid[row][col];
-                });
             }
             paintcorners(context, corners, size) {
                 var pixelsize = parseInt($("pixelscell").value);
@@ -558,8 +577,6 @@
                         }
 
                         if (this.grid[i][j]) {
-
-
                             context.fillStyle = this.colorArray[Math.abs(this.grid[i][j] - 1) % this.colorArray.length];
                             context.fillRect(j * pixelsize, i * pixelsize, pixelsize, pixelsize);
 
