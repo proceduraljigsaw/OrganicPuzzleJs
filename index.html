@@ -242,7 +242,7 @@
                         // var len = bg.path.getTotalLength();
                         // for (let u = bg.u - 0.01; u <= bg.u + 0.01; u += 0.005) {
                         //     let p = bg.path.getPointAtLength(u * len);
-                        d = Math.hypot(bg.rx - corner.col,bg.ry - corner.row)
+                        d = Math.hypot(bg.rx - corner.col, bg.ry - corner.row)
                         if (d < mind) {
                             mind = d;
                             cp = { x: bg.rx, y: bg.ry };
@@ -642,8 +642,10 @@
         function generate() {
             var pixelsize = parseInt($("pixelscell").value);
             if (customborder.svgdata) {
-                var svgdata_p = xmldoc.getElementsByTagName("svg")[0];
-                customborder.svgdata = svgdata_p;
+                while ($("svgcontainer").firstChild) {
+                    $("svgcontainer").removeChild($("svgcontainer").firstChild);
+                }
+
                 var svgdata = document.body.appendChild(customborder.svgdata);
                 //Initial flattening to get rid of transforms
                 flatten(svgdata, false, true);
@@ -849,7 +851,7 @@
     <input type="file" id="borderfile" accept=".svg">
     Custom border scale factor:
     <input id="cbsf" type="text" value="1" size="4" />
-    <button onclick="loadborder()">Load SVG customborder</button>
+    <button onclick="loadborder()">Load SVG custom border</button>
     <button onclick="generate()">Generate Jigsaw</button>
     <button onclick="growstep()">Grow Jigsaw</button>
     <button onclick="savesvg()">Download SVG (non-overlapping vectors)</button>
