@@ -53,11 +53,7 @@
         }
 
         class Automata {
-            constructor(rows, columns, border) {
-                if (border.paths) {
-                    columns = Math.ceil(border.width) + 1;
-                    rows = Math.ceil(border.height) + 1;
-                }
+            constructor(rows, columns) {
                 this.rows = rows;
                 this.columns = columns;
                 this.max_growth_dist = 0;
@@ -71,10 +67,6 @@
                 this.maskgrid = Array2D(rows, columns);
                 this.borderdistgrid = Array2D(rows, columns);
                 this.lockedgrid = Array2D(rows, columns);
-                if (border.paths) {
-                    this.fillmask(border.paths);
-                }
-
             }
 
             fillmask(paths) {
@@ -641,6 +633,11 @@
 
         function generate() {
             var pixelsize = parseInt($("pixelscell").value);
+            var rows = parseInt($("nrows").value);
+            var cols = parseInt($("ncols").value);
+            var gsize = parseInt($("gsize").value);
+            var gnoise = parseFloat($("gnoise").value);
+
             if (customborder.svgdata) {
                 while ($("svgcontainer").firstChild) {
                     $("svgcontainer").removeChild($("svgcontainer").firstChild);
@@ -681,20 +678,35 @@
                 customborder.height = ($("svgcontainer").getBBox().height + $("svgcontainer").getBBox().y);// * pixelsize;
 
                 customborder.paths = pgroup.getElementsByTagName("path");
+
+                cols = Math.ceil(customborder.width) + 1;
+                rows = Math.ceil(customborder.height) + 1;
+
             }
-            var rows = parseInt($("nrows").value);
-            var cols = parseInt($("ncols").value);
 
-            var gsize = parseInt($("gsize").value);
-            var gnoise = parseFloat($("gnoise").value);
+            if (rows * cols > 1e6) {
+                var extra_text = "\nHint: Try reducing the number of rows and columns until rows times columns is less than 1 million.\n";
+                if (customborder.svgdata) {
+                    var max_scale = parseFloat($("cbsf").value) / Math.sqrt((rows * cols) / 1e6);
+                    extra_text = "\nHint: Try reducing the custom border scale factor. The maximum value recommended for your custom border is " + max_scale.toFixed(2) + ".\n";
+                }
+                var confirmed = window.confirm("You are going to generate a " + Math.round(rows) + " x " + Math.round(cols) + " cell jigsaw. This is very large, and " +
+                    "it may take a very long time to generate or even lock your browser. Just close it if this happens." + extra_text + "Do you want to continue generating the jigsaw?");
+                if (!confirmed) {
+                    return;
+                }
+            }
 
-            automata = new Automata(rows, cols, customborder);
-            if (customborder.svgdata) {
+            automata = new Automata(rows, cols);
+
+            if (customborder.paths) {
+                automata.fillmask(customborder.paths)
                 pgroup.setAttribute("transform", "scale(" + parseFloat($("cell_scale").value) + ")");
                 flatten($("svgcontainer"), false, true);
             }
-            rows = automata.rows;
-            cols = automata.columns;
+
+
+
             canvas = $("automata");
             canvas.setAttribute("width", cols * pixelsize + 5);
             canvas.setAttribute("height", rows * pixelsize + 5);// * 2);
@@ -704,9 +716,9 @@
                 context = canvas.getContext('2d');
 
 
-                if (customborder.paths) {
-                    automata.paintmask(context);
-                }
+                // if (customborder.paths) {
+                //     automata.paintmask(context);
+                // }
                 automata.gridseed(gsize, gnoise);
                 palette = ImageTracer.generatepalette(automata.seedpoints.length + 1);
                 Shuffle(palette);
@@ -722,6 +734,7 @@
                 } while (growncells);
                 paintoutput();
             }
+            updatedimensions(1);
         }
 
         function paintoutput() {
@@ -785,6 +798,25 @@
 
         function unloadborder() {
             customborder = {};
+            updatedimensions();
+        }
+        function updatedimensions(gen) {
+            var width_mm = 0;
+            var height_mm = 0;
+            if (customborder.svgdata) {
+                if (gen) {
+                    width_mm = (customborder.width) * parseFloat($("cell_scale").value);
+                    height_mm = (customborder.height) * parseFloat($("cell_scale").value);
+                } else {
+                    $("dimensions").innerHTML = "Generate to know";
+                    return;
+                }
+
+            } else {
+                width_mm = parseInt($("ncols").value) * parseFloat($("cell_scale").value);
+                height_mm = parseInt($("nrows").value) * parseFloat($("cell_scale").value);
+            }
+            $("dimensions").innerHTML = Math.round(width_mm) + " x " + Math.round(height_mm);
         }
 
         function loadborder() {
@@ -797,6 +829,7 @@
                 xmldoc = parser.parseFromString(fr.result, "image/svg+xml");
                 var svgdata_p = xmldoc.getElementsByTagName("svg")[0];
                 customborder.svgdata = svgdata_p;
+                updatedimensions();
             };
         }
 
@@ -812,11 +845,11 @@
         </tr>
         <tr>
             <td>Columns:</td>
-            <td><input id="ncols" type="text" value="100" /> cells</td>
+            <td><input id="ncols" onchange="updatedimensions(0)" type="text" value="100" /> cells</td>
         </tr>
         <tr>
             <td>Rows:</td>
-            <td><input id="nrows" type="text" value="100" /> cells</td>
+            <td><input id="nrows" onchange="updatedimensions(0)" type="text" value="100" /> cells</td>
         </tr>
         <tr>
             <td>Grid size:</td>
@@ -844,7 +877,7 @@
         </tr>
         <tr>
             <td>Cell size (mm):</td>
-            <td><input id="cell_scale" type="text" value="2" /></td>
+            <td><input id="cell_scale" onchange="updatedimensions(0)" type="text" value="2" /></td>
         </tr>
         <tr>
             <td>Preview Viewing scale (pixels/cell):</td>
@@ -856,7 +889,7 @@
         </tr>
         <tr>
             <td>Custom border scale factor:</td>
-            <td><input id="cbsf" type="text" value="1" size="4" /></td>
+            <td><input id="cbsf" onchange="updatedimensions(0)" type="text" value="1" size="4" /></td>
         </tr>
         <tr>
             <td><button onclick="loadborder()">Load custom border</button></td>
@@ -873,6 +906,9 @@
         </tr>
         <tr>
             <td>This jigsaw has: <label id="piececount">0</label> pieces</td>
+        </tr>
+        <tr>
+            <td>Jigsaw dimensions: <label id="dimensions">200 x 200</label> mm</td>
         </tr>
     </table>
 
