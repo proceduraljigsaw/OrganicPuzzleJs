@@ -9,6 +9,8 @@
     <script type="text/javascript">
 
         var xmldoc = null;
+        var timerID;
+        var autogrowth = false;
         function $(id) { return document.getElementById(id); }
         function random() {
             return Math.random();
@@ -440,6 +442,7 @@
                             if (!this.cornergrid[row][col + 1])
                                 this.cornergrid[row][col + 1] = 2;
                             edge.push({ row: row, col: col + 1 });
+                            context.strokeStyle = "black";
                             context.beginPath();
                             context.moveTo(col * pixelsize, row * pixelsize);
                             context.lineTo((col + 1) * pixelsize, (row) * pixelsize);
@@ -462,6 +465,7 @@
                             if (!this.cornergrid[row][col - 1])
                                 this.cornergrid[row][col - 1] = 2;
                             edge.push({ row: row, col: col - 1 });
+                            context.strokeStyle = "black";
                             context.beginPath();
                             context.moveTo(col * pixelsize, row * pixelsize);
                             context.lineTo((col - 1) * pixelsize, (row) * pixelsize);
@@ -484,6 +488,7 @@
                             if (!this.cornergrid[row - 1][col])
                                 this.cornergrid[row - 1][col] = 2;
                             edge.push({ row: row - 1, col: col });
+                            context.strokeStyle = "black";
                             context.beginPath();
                             context.moveTo(col * pixelsize, row * pixelsize);
                             context.lineTo(col * pixelsize, (row - 1) * pixelsize);
@@ -527,9 +532,9 @@
                 var pixelsize = parseInt($("pixelscell").value);
                 corners.forEach((c) => {
 
-                    var size = 8;
-                    context.fillStyle = c.customborder ? "red" : "blue";
-                    context.fillRect((c.col * pixelsize) - size / 2, (c.row * pixelsize) - size / 2, size, size);
+                    // var size = 8;
+                    // context.fillStyle = c.customborder ? "red" : "blue";
+                    // context.fillRect((c.col * pixelsize) - size / 2, (c.row * pixelsize) - size / 2, size, size);
                     // if (!c.customborder) {
                     directions.forEach((d) => {
                         var edge = [c];
@@ -748,12 +753,12 @@
             $("svgcontainer").setAttribute("width", cols * cellscale);
             $("svgcontainer").setAttribute("height", rows * cellscale);
             automata.paint(context, palette);
-            console.log("Painted");
+            // console.log("Painted");
             var corners = automata.findcorners(customborder);
-            console.log("Cornered");
+            // console.log("Cornered");
 
             var edges = automata.findedges(corners, context);
-            console.log("Edged");
+            // console.log("Edged");
 
             var paths = [];
             //convert to how svgtracejs wants this
@@ -778,7 +783,7 @@
 
             // Getting ImageData from canvas with the helper function getImgdata().
             svgstr = ImageTracer.pathsToSVG(paths, customborder, automata.cornertable, automata.columns, automata.rows, options);
-            console.log("SVG'd");
+            // console.log("SVG'd");
 
             // Synchronous tracing to SVG string 
             //var svgstr = ImageTracer.gridToSVG(automata.grid, palette, options);
@@ -789,11 +794,28 @@
             ImageTracer.appendSVGString(svgstr, 'svgcontainer');
         }
 
+
+
         function growstep() {
             growncells = automata.step(context, false);
-            console.log("Grown");
+            // console.log("Grown");
             paintoutput();
 
+        }
+        function toggleautogrow() {
+            if (automata) {
+                autogrowth = !autogrowth;
+                if (autogrowth) {
+                    timerID = setTimeout(function () {
+                        growstep();
+                        timerID = setTimeout(arguments.callee, 1)
+                    }, 1);
+                    $("autogrow").innerHTML = "Stop Automatic Growth";
+                } else {
+                    clearTimeout(timerID);
+                    $("autogrow").innerHTML = "Start Automatic Growth";
+                }
+            }
         }
 
         function unloadborder() {
@@ -876,11 +898,11 @@
             <td><input id="growth_prob" type="text" value="0.5" /></td>
         </tr>
         <tr>
-            <td>Cell size (mm):</td>
+            <td>Cell size for SVG (mm):</td>
             <td><input id="cell_scale" onchange="updatedimensions(0)" type="text" value="2" /></td>
         </tr>
         <tr>
-            <td>Preview Viewing scale (pixels/cell):</td>
+            <td>Cell Viewing scale (pixels/cell):</td>
             <td><input id="pixelscell" type="text" value="2" /></td>
         </tr>
         <tr>
@@ -899,7 +921,8 @@
             <td><button onclick="generate()">Generate Jigsaw</button></td>
         </tr>
         <tr>
-            <td><button onclick="growstep()">Grow Jigsaw</button></td>
+            <td><button onclick="growstep()">Grow Jigsaw Manually</button></td>
+            <td><button id="autogrow" onclick="toggleautogrow()">Start Automatic Growth</button></td>
         </tr>
         <tr>
             <td><button onclick="savesvg()">Download SVG (non-overlapping vectors)</button></td>
