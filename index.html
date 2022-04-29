@@ -31,8 +31,8 @@
             let uinc = 0.0078125;
             for (let u = 0; u <= 1; u += uinc) {
                 let p = path.getPointAtLength(u * len);
-                p.rx = p.x;
-                p.ry = p.y;
+                p.rx = p.x/scale;
+                p.ry = p.y/scale;
                 p.x = Math.round(p.x / scale);
                 p.y = Math.round(p.y / scale);
                 p.u = u;
@@ -71,13 +71,13 @@
                 this.lockedgrid = Array2D(rows, columns);
             }
 
-            fillmask(paths) {
+            fillmask(paths,scale) {
                 const crosslookup = [[-1, 0], [1, 0], [0, 1], [0, -1]];
 
                 var allpts = []
                 var minx, miny, maxx, maxy
                 for (let p of paths) {
-                    var pts = plotpath(p, 1);
+                    var pts = plotpath(p, scale);
                     pts.forEach((pt) => {
                         allpts.push(pt);
                         if (isNaN(minx) || pt.x < minx) minx = pt.x;
@@ -642,6 +642,7 @@
             var cols = parseInt($("ncols").value);
             var gsize = parseInt($("gsize").value);
             var gnoise = parseFloat($("gnoise").value);
+            var cell_scale = parseFloat($("cell_scale").value)
 
             if (customborder.svgdata) {
                 while ($("svgcontainer").firstChild) {
@@ -684,8 +685,8 @@
 
                 customborder.paths = pgroup.getElementsByTagName("path");
 
-                cols = Math.ceil(customborder.width) + 1;
-                rows = Math.ceil(customborder.height) + 1;
+                cols = Math.ceil(customborder.width/cell_scale) + 1;
+                rows = Math.ceil(customborder.height/cell_scale) + 1;
 
             }
 
@@ -705,9 +706,9 @@
             automata = new Automata(rows, cols);
 
             if (customborder.paths) {
-                automata.fillmask(customborder.paths)
-                pgroup.setAttribute("transform", "scale(" + parseFloat($("cell_scale").value) + ")");
-                flatten($("svgcontainer"), false, true);
+                automata.fillmask(customborder.paths,cell_scale);
+                // pgroup.setAttribute("transform", "scale(" + parseFloat($("cell_scale").value) + ")");
+                // flatten($("svgcontainer"), false, true);
             }
 
 
