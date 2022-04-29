@@ -828,8 +828,8 @@
             var height_mm = 0;
             if (customborder.svgdata) {
                 if (gen) {
-                    width_mm = (customborder.width) * parseFloat($("cell_scale").value);
-                    height_mm = (customborder.height) * parseFloat($("cell_scale").value);
+                    width_mm = (customborder.width);
+                    height_mm = (customborder.height);
                 } else {
                     $("dimensions").innerHTML = "Generate to know";
                     return;
