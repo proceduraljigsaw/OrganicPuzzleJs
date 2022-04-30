@@ -532,10 +532,10 @@ For more information, please refer to http://unlicense.org/
                 options = _this.checkoptions(options);
 
                 var w = tracedata.width * options.scale, h = tracedata.height * options.scale;
-
+                var svheader_display = '<svg ' + 'width="' + w + '" height="' + h + '" ';
+                var svheader_save = '<svg ' +  ('viewBox="0 0 ' + w + ' ' + h + '" ') + ('width="' + w + 'mm" height="' + h + 'mm" ');
                 // SVG start
-                var svgstr = '<svg ' + (options.viewbox ? ('viewBox="0 0 ' + w + ' ' + h + '" ') : ('width="' + w + '" height="' + h + '" ')) +
-                    'version="1.1" xmlns="http://www.w3.org/2000/svg" desc="Created with a heavily modified imagetracer.js version ' + _this.versionnumber + '" >';
+                var svgstr = 'version="1.1" xmlns="http://www.w3.org/2000/svg" desc="Created with a heavily modified imagetracer.js version ' + _this.versionnumber + '" >';
 
                 // Drawing: Layers and Paths loops
                 for (var lcnt = 0; lcnt < tracedata.layers.length; lcnt++) {
@@ -561,7 +561,7 @@ For more information, please refer to http://unlicense.org/
                 }
                 svgstr += '</svg>';
 
-                return svgstr;
+                return [svheader_display+svgstr , svheader_save+svgstr];
 
             },// End of getsvgstring()
 

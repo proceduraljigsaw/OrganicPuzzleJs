@@ -2,6 +2,42 @@
 <html>
 
 <head>
+    <style>
+        /* Style the tab */
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+        /* Style the buttons that are used to open the tab content */
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+        }
+
+        /* Change background color of buttons on hover */
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        /* Create an active/current tablink class */
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        /* Style the tab content */
+        .tabcontent {
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+    </style>
     <meta charset="UTF-8">
     <title>CelljigsawJS</title>
     <script type="text/javascript" src="imagetracer.js"></script>
@@ -31,8 +67,8 @@
             let uinc = 0.0078125;
             for (let u = 0; u <= 1; u += uinc) {
                 let p = path.getPointAtLength(u * len);
-                p.rx = p.x/scale;
-                p.ry = p.y/scale;
+                p.rx = p.x / scale;
+                p.ry = p.y / scale;
                 p.x = Math.round(p.x / scale);
                 p.y = Math.round(p.y / scale);
                 p.u = u;
@@ -71,7 +107,7 @@
                 this.lockedgrid = Array2D(rows, columns);
             }
 
-            fillmask(paths,scale) {
+            fillmask(paths, scale) {
                 const crosslookup = [[-1, 0], [1, 0], [0, 1], [0, -1]];
 
                 var allpts = []
@@ -614,6 +650,7 @@
         var automata;
         var palette;
         var svgstr;
+        var svgstrsave;
         var context;
         var customborder = {};
         // save function pieced together from here: https://stackoverflow.com/questions/19327749/javascript-blob-filename-without-link
@@ -633,7 +670,7 @@
         }
 
         function savesvg() {
-            save("jigsaw.svg", svgstr);
+            save("jigsaw.svg", svgstrsave);
         }
 
         function generate() {
@@ -685,8 +722,8 @@
 
                 customborder.paths = pgroup.getElementsByTagName("path");
 
-                cols = Math.ceil(customborder.width/cell_scale) + 1;
-                rows = Math.ceil(customborder.height/cell_scale) + 1;
+                cols = Math.ceil(customborder.width / cell_scale) + 1;
+                rows = Math.ceil(customborder.height / cell_scale) + 1;
 
             }
 
@@ -706,7 +743,7 @@
             automata = new Automata(rows, cols);
 
             if (customborder.paths) {
-                automata.fillmask(customborder.paths,cell_scale);
+                automata.fillmask(customborder.paths, cell_scale);
                 // pgroup.setAttribute("transform", "scale(" + parseFloat($("cell_scale").value) + ")");
                 // flatten($("svgcontainer"), false, true);
             }
@@ -783,7 +820,7 @@
             var options = { pal: palette, scale: cellscale, ltres: 0.00001, qtres: parseFloat($("qtres").value), strokewidth: .5, linefilter: false, rightangleenhance: false, layering: 0, layercontainerid: "layercnt" };
 
             // Getting ImageData from canvas with the helper function getImgdata().
-            svgstr = ImageTracer.pathsToSVG(paths, customborder, automata.cornertable, automata.columns, automata.rows, options);
+            [svgstr,svgstrsave] = ImageTracer.pathsToSVG(paths, customborder, automata.cornertable, automata.columns, automata.rows, options);
             // console.log("SVG'd");
 
             // Synchronous tracing to SVG string 
@@ -802,6 +839,11 @@
             // console.log("Grown");
             paintoutput();
 
+        }
+        function stopautogrow(){
+            if(autogrowth){
+                toggleautogrow();
+            }
         }
         function toggleautogrow() {
             if (automata) {
@@ -855,86 +897,137 @@
                 updatedimensions();
             };
         }
+        function switchtab(evt, tab) {
+            // Declare all variables
+            var i, j, tabcontent, tablinks;
+            stopautogrow()
+            if (tab == "rect"){
+                unloadborder();
+            }
+
+            // Get all elements with class="tabcontent" and hide them
+            tabcontent = document.getElementsByClassName("controltable");
+            for (i = 0; i < tabcontent.length; i++) {
+                rowelems = tabcontent[i].rows;
+                for (j = 0; j < rowelems.length; j++) {
+                    if (!rowelems[j].className || rowelems[j].className == tab) {
+                        rowelems[j].removeAttribute("style")
+                    } else {
+                        rowelems[j].style.display = "none"
+                    }
+                }
+            }
+
+            // Get all elements with class="tablinks" and remove the class "active"
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            // document.getElementById(tab).style.display = "block";
+            evt.currentTarget.className += " active";
+
+            if (tab == "custom" && !customborder.width){
+                window.alert("Please choose a custom SVG border file");
+                document.getElementById("borderfile").click();
+            }
+        }
 
 
     </script>
 </head>
 
 <body>
-    <table>
-        <tr>
-            Need help? Check the github repository readme <a
-                href="https://github.com/proceduraljigsaw/OrganicPuzzleJs">here</a>.
-        </tr>
-        <tr>
-            <td>Columns:</td>
-            <td><input id="ncols" onchange="updatedimensions(0)" type="text" value="100" /> cells</td>
-        </tr>
-        <tr>
-            <td>Rows:</td>
-            <td><input id="nrows" onchange="updatedimensions(0)" type="text" value="100" /> cells</td>
-        </tr>
-        <tr>
-            <td>Grid size:</td>
-            <td><input id="gsize" type="text" value="10" /> cells</td>
-        </tr>
-        <tr>
-            <td>Initial Grid position noise (0 to 1):</td>
-            <td><input id="gnoise" type="text" value="0.9" /></td>
-        </tr>
-        <tr>
-            <td>Growth radius:</td>
-            <td><input id="gradius" type="text" value="20" /> cells</td>
-        </tr>
-        <tr>
-            <td>Curve fitting threshold (must be >0, float):</td>
-            <td><input id="qtres" type="text" value="1" /></td>
-        </tr>
-        <tr>
-            <td>Magic number(just leave it at 6.2):</td>
-            <td><input id="mnumber" type="text" value="6.2" /></td>
-        </tr>
-        <tr>
-            <td>Growth probability (0 to 1):</td>
-            <td><input id="growth_prob" type="text" value="0.5" /></td>
-        </tr>
-        <tr>
-            <td>Cell size for SVG (mm):</td>
-            <td><input id="cell_scale" onchange="updatedimensions(0)" type="text" value="2" /></td>
-        </tr>
-        <tr>
-            <td>Cell Viewing scale (pixels/cell):</td>
-            <td><input id="pixelscell" type="text" value="2" /></td>
-        </tr>
-        <tr>
-            <td>Pick a custom border SVG file:</td>
-            <td><input type="file" id="borderfile" accept=".svg"></td>
-        </tr>
-        <tr>
-            <td>Custom border scale factor:</td>
-            <td><input id="cbsf" onchange="updatedimensions(0)" type="text" value="1" size="4" /></td>
-        </tr>
-        <tr>
-            <td><button onclick="loadborder()">Load custom border</button></td>
-            <td><button onclick="unloadborder()">Unload custom border</button></td>
-        </tr>
-        <tr>
-            <td><button onclick="generate()">Generate Jigsaw</button></td>
-        </tr>
-        <tr>
-            <td><button onclick="growstep()">Grow Jigsaw Manually</button></td>
-            <td><button id="autogrow" onclick="toggleautogrow()">Start Automatic Growth</button></td>
-        </tr>
-        <tr>
-            <td><button onclick="savesvg()">Download SVG (non-overlapping vectors)</button></td>
-        </tr>
-        <tr>
-            <td>This jigsaw has: <label id="piececount">0</label> pieces</td>
-        </tr>
-        <tr>
-            <td>Jigsaw dimensions: <label id="dimensions">200 x 200</label> mm</td>
-        </tr>
-    </table>
+
+    <div class="tab">
+        <button class="tablinks" id="default" onclick="switchtab(event, 'rect')">Rectangular border</button>
+        <button class="tablinks" onclick="switchtab(event, 'custom')">Custom border</button>
+        <button class="tablinks" onclick="switchtab(event, 'help')">Help</button>
+    </div>
+    <div class="tabcontent">
+        <table class="controltable">
+            <tr>
+                Need help? Check the github repository readme <a
+                    href="https://github.com/proceduraljigsaw/OrganicPuzzleJs">here</a>.
+            </tr>
+            <tr class="rect">
+                <td>Columns:</td>
+                <td><input id="ncols" onchange="updatedimensions(0)" type="text" value="100" /> cells</td>
+            </tr>
+            <tr class="rect">
+                <td>Rows:</td>
+                <td><input id="nrows" onchange="updatedimensions(0)" type="text" value="100" /> cells</td>
+            </tr>
+            <tr>
+                <td>Grid size:</td>
+                <td><input id="gsize" type="text" value="10" /> cells</td>
+            </tr>
+            <tr>
+                <td>Initial Grid position noise (0 to 1):</td>
+                <td><input id="gnoise" type="text" value="0.9" /></td>
+            </tr>
+            <tr>
+                <td>Growth radius:</td>
+                <td><input id="gradius" type="text" value="20" /> cells</td>
+            </tr>
+            <tr>
+                <td>Curve fitting threshold (must be >0, float):</td>
+                <td><input id="qtres" type="text" value="1" /></td>
+            </tr>
+            <tr>
+                <td>Magic number(just leave it at 6.2):</td>
+                <td><input id="mnumber" type="text" value="6.2" /></td>
+            </tr>
+            <tr>
+                <td>Growth probability (0 to 1):</td>
+                <td><input id="growth_prob" type="text" value="0.5" /></td>
+            </tr>
+            <tr>
+                <td>Actual cell size (mm):</td>
+                <td><input id="cell_scale" onchange="updatedimensions(0)" type="text" value="2" /></td>
+            </tr>
+            <tr>
+                <td>Cell preview scale (pixels/cell):</td>
+                <td><input id="pixelscell" type="text" value="2" /></td>
+            </tr>
+            <tr class="custom">
+                <td>SVG border file:</td>
+                <td><input type="file" id="borderfile" accept=".svg" onchange="loadborder()"></td>
+            </tr>
+            <tr class="custom">
+                <td>Custom border scale factor:</td>
+                <td><input id="cbsf" onchange="updatedimensions(0)" type="text" value="1" size="4" /></td>
+            </tr>
+            <!-- <tr class="custom">
+                <td><button onclick="loadborder()">Load custom border</button></td>
+                <td><button onclick="unloadborder()">Unload custom border</button></td>
+            </tr> -->
+            <tr>
+                <td><button onclick="generate()">Generate Jigsaw</button></td>
+            </tr>
+            <tr>
+                <td><button onclick="growstep()">Grow Jigsaw Manually</button></td>
+                <td><button id="autogrow" onclick="toggleautogrow()">Start Automatic Growth</button></td>
+            </tr>
+            <tr>
+                <td><button onclick="savesvg()">Download SVG (non-overlapping vectors)</button></td>
+            </tr>
+            <tr>
+                <td>This jigsaw has: <label id="piececount">0</label> pieces</td>
+            </tr>
+            <tr>
+                <td>Jigsaw dimensions: <label id="dimensions">200 x 200</label> mm</td>
+            </tr>
+        </table>
+    </div>
+
+
+    <script>
+        document.getElementById("default").click();
+    </script>
+
+
 
 
     <svg id="svgcontainer"></svg>
