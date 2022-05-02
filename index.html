@@ -1054,18 +1054,18 @@
         <div class="help">
             <h2>How it works</h2>
             <h3>Basic Initial setup</h3>
-            <p>This jigsaw generator is based on a cellular automata. A <a
+            <p>This jigsaw generator is based on a cellular automaton. A <a
                     href="https://en.wikipedia.org/wiki/Cellular_automaton">cellular automaton</a> consists of simulated
-                &quot;cells&quot; living in a grid, and their life cycle behaviour is set by some usually simple rules. In
+                &quot;cells&quot; living in a grid, and their life cycle behavior is set by some usually simple rules. In
                 this
                 case, we simulate colonies of different types of cells,
-                that get get to live, eat other cells and get eaten, competing with other species in their &quot;grid
+                that get to live, eat other cells and get eaten, competing with other species in their &quot;grid
                 world&quot; to be the most abundant. This is all governed by randomness, so every jigsaw generated is unique
                 and
                 can't be regenerated (well... this is not entirely true but let's not go down that rabbit hole). It all
                 starts
                 with a blank
-                rectangular grid, where the cells will live. Each grid spot can only be occupied by one cell, like this
+                rectangular grid, where the cells will live. Each grid spot can only be occupied by one cell, like in this
                 27x27
                 world:
             </p>
@@ -1075,12 +1075,12 @@
                     Grid world for our cells
                 </figcaption>
             </figure>
-            <p>The grid world is subdivided in a subgrid of regions of <em><strong>Grid size</strong></em> by
+            <p>The grid world is subdivided into a subgrid of regions of <em><strong>Grid size</strong></em> by
                 <em><strong>Grid
                         size</strong></em> cells in size, like this example below, where the 27x27 cell world is subdivided
-                in
+                into
                 9x9
-                cell square regions. When the divison isn't even (in this case it is, as 9 evenly divides 27), the last row
+                cell square regions. When the division isn't even (in this case it is, as 9 evenly divides 27), the last row
                 and
                 column of this subgrid may be smaller or larger to compensate.
             </p>
@@ -1094,7 +1094,7 @@
                 Each
                 seed cell is a different species, represented
                 by its color.
-                All cell species behave in exactly the same way, distinguishing their own kind from the rest based on its
+                All cell species behave in exactly the same way, distinguishing their own kind from the rest based on their
                 color.
                 Where the seed is planted within its region is controlled by the <em><strong>Initial Grid position
                         noise</strong></em> parameter. This parameter can take any
@@ -1105,7 +1105,7 @@
                         size</em> </strong>is even). Increasing <em><strong>Initial Grid position noise</strong></em> values
                 enlarge the
                 area
-                around the region center where the seed may be planted, up to the region borders whenit approaches 1, as
+                around the regional center where the seed may be planted, up to the region borders when it approaches 1, as
                 shown
                 below:
             </p>
@@ -1129,6 +1129,9 @@
                             </figcaption>
                         </figure>
                     </td>
+                    </tr>
+                </table class="center">
+                <tr>
                     <td>
                         <figure>
                             <img src="assets/20220430_233123_seeding10noise.png" width="270"
@@ -1151,12 +1154,12 @@
                 lead to more irregular initial growth patterns.
             </p>
             <p>After the seeds have been planted, the cells start multiplying trying to conquer as much territory as
-                posible.
+                possible.
                 For
-                now their only goal is to fill their world leaving no space unconquered. Cells start multiplying and their
+                now, their only goal is to fill their world leaving no space unconquered. Cells start multiplying and their
                 spawn
-                start conquering the neighboring places, until the whole world is filled by cells. For now, cells don't eat
-                eachother, they just grow to form the initial growth pattern, unrestricted, until the world is full of
+                starts conquering the neighboring places, until the whole world is filled with cells. For now, cells don't eat
+                each other, they just grow to form the initial growth pattern, unrestricted, until the world is full of
                 cells,
                 like
                 this:
@@ -1169,18 +1172,18 @@
             </figure>
             <h3>Jigsaw growth</h3>
             <p>
-                Once the initial growth has been established, the cells may start eating eachother forming the intrincate,
+                Once the initial growth has been established, the cells may start eating each other forming the intricate,
                 organic jigsaw puzzle patterns. Every time you
                 press the <strong>Grow Jigsaw Manually</strong> button, or continuously as fast as your browser can go if
                 you
-                <strong>Start Automatic Growth</strong> , every cell in the border of its region is proposed for
+                <strong>Start Automatic Growth</strong>, every cell in the border of its region is proposed for
                 growth, with <em><strong>Growth probability</strong></em>.
                 If <em><strong>Growth probability</strong></em> equals 0, no cell will ever grow, the world will remain
                 stale in
                 its initial state
                 and no jigsaw puzzle patterns will emerge. <em><strong>Growth probability</strong></em> is set to 1, every
                 single region-border cell will try to grow, eating neighboring cells and conquering
-                their regiomn. Anything in between essentially regulates growth speed.
+                their region. Anything in between essentially regulates growth speed.
             </p>
             <p>
                 Cells aren't guaranteed to grow, even if they are selected for growth, they will only be able to divide and
@@ -1189,7 +1192,7 @@
                 behind the algorithm is to allow eating neighboring
                 cells of a different species (color) as long as that doesn't split the attacked colony in two, i.e. that
                 each
-                and every cell of a
+                and every cell of one
                 color remains attached to at least one cross neighbor of the same color. In this case, corner neighbor
                 attachments don't count as attachments.
             </p>
@@ -1201,18 +1204,18 @@
                 grid world is filled). This means that no places too far away from the initial seed point will be eaten by
                 the
                 colony, limiting the extent of its growth. This
-                avoids growing too long and thin dendrites or tentacles, which make less robust, more fragile and
+                avoids growing too long and thin dendrites or tentacles, which make less robust, more fragile, and
                 potentially
-                too intrincate jigsaw pieces. This parameter has to be
-                changed depending on the selected <em><strong>Grid size</strong></em>. Larger <em><strong>Grid
-                        size</strong></em> requires larger <em><strong>Growth radius</strong></em>,
+                too intricate jigsaw pieces. This parameter has to be
+                changed depending on the selected <em><strong>Grid size</strong></em>. A larger <em><strong>Grid
+                        size</strong></em> requires a larger <em><strong>Growth radius</strong></em>,
                 or else nothing will grow or the growth will be too limited, so the pieces won't form interlocking
-                dendtrites.
+                dendrites.
                 The example below shows the effects of <em><strong>Growth radius</strong></em>.
                 The initial seed position of the red colony is shown, along with a circle representing the maximum growth
                 radius
                 for this colony. Increasing the <em><strong>Growth radius</strong></em> enlarges
-                the potential extents of the colony growth.
+                the potential extent of the colony growth.
             </p>
             <table class="center">
                 <tr>
@@ -1253,10 +1256,10 @@
                 </tr>
             </table>
             <p>
-                The growing algorithm behaviour is governed by a parameter that acts as a magic number. For some reason,
+                The growing algorithm behavior is governed by a parameter that acts as a magic number. For some reason,
                 setting
                 this parameter (<em><strong>Magic number</strong></em>) to around 6.2 makes everything work.
-                Setting it to other values, makes it not work. I left it there for you to play and see what happens if you
+                Setting it to other values makes it not work. I left it there for you to play and see what happens if you
                 dare
                 to change its value.
             </p>
@@ -1265,12 +1268,11 @@
                 The jigsaw pieces are generated by tracing and vectorizing the borders of the cell colonies. The algorithm
                 finds
                 the borders between all regions
-                and fits <a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">quadratic bezier</a> curves and straight
-                line
+                and fits <a href="https://en.wikipedia.org/wiki/B%C3%A9zier_curve">quadratic bezier</a> curves and straight-line
                 segments with configurable
                 accuracy. As the cells are considered square, the border between regions is a jagged staircase pattern. The
                 vectorizer tries to infer curves from the
-                staircase patterns to smooth out the border, and give the pieces their characteristic organic look. The
+                staircase patterns to smooth out the border and give the pieces their characteristic organic look. The
                 "jaggedness" of the resulting vectorization
                 can be controlled by the <em><strong>Curve fitting threshold</strong></em> value. Lower values of
                 <em><strong>Curve fitting threshold</strong></em> yield
@@ -1341,15 +1343,15 @@
                 During the generation process, everything is stored internally in unitless dimensions with no connection to
                 the
                 physical world, and each cell occupies
-                exactly 1 square unit of real state in the grid world. This means a N rows x M columns grid world will host
+                exactly 1 square unit of real state in the grid world. This means an N rows x M columns grid world will host
                 N x M
                 cells. You could, in a way, say that
-                everything is measured in cell units. However, this has to be translated into the phisical world somehow,
+                everything is measured in cell units. However, this has to be translated into the physical world somehow,
                 both for
                 cutting and for preview display.
                 The SVG preview is given to the browser in unitless size, which is normally interpreted as pixels. This
                 allows for
-                display of large jigsaws in normal screens.
+                the display of large jigsaws on normal screens.
                 When you download the SVG, however, it will be set to millimeter units. A unitless internal 100 x 100 units
                 SVG
                 file will be downloaded as a 100mm x 100mm
@@ -1365,16 +1367,16 @@
                 parameter. As
                 the growth algorithm is size-independent and
                 in the end yields dendrites and tentacles about 1 to 3 cells wide, the relative size of the dendrites to the
-                overall region, combined to the limited growth radius,
-                help create very different jigsaw styles. <em><strong>Grid size</strong></em> below 8 or so will create
+                overall region, combined with the limited growth radius,
+                helps create very different jigsaw styles. <em><strong>Grid size</strong></em> below 8 or so will create
                 initial
                 patterns that will most likely grow very little or not
                 at all. <em><strong>Grid size</strong></em> about 10 is the sweet spot for starfish-like pieces, where the
-                dendrites are comparable in size with the overall piece.
+                dendrites are comparable in size to the overall piece.
                 Larger <em><strong>Grid size</strong></em> while keeping <em><strong>Growth radius</strong></em> not too
                 large
                 create more dendritic-cell like patterns. Large <em><strong>Grid size</strong></em>
-                with large <em><strong>Growth radius</strong></em> yield very intrincate, coral-like pieces. Play with the
+                with a large <em><strong>Growth radius</strong></em> yields very intricate, coral-like pieces. Play with the
                 parameters to see the different results, as you can see below.
             </p>
             <table class="center">
@@ -1431,7 +1433,7 @@
                 Please note that these jigsaws are meant to be laser-cut, and small structures may cause trouble. You have
                 to
                 scale things taking real-life material
-                behaviour into account, so that edge details between pieces have a large enough size for cutting properly.
+                behavior into account, so that edge details between pieces have a large enough size for cutting properly.
             </p>
             <h3>Rectangular border mode usage</h3>
             <p>
@@ -1448,25 +1450,25 @@
                 </li>
                 <li><strong>Initial Grid position noise:</strong> this parameter affects the irregularity of the initial
                     growth
-                    pattern, as explained in the previous secitons.
+                    pattern, as explained in the previous sections.
                 </li>
                 <li><strong>Growth radius:</strong> how far away from the initial seed spot can a colony grow, as explained
                     in the
-                    previous secitons.
+                    previous sections.
                 </li>
                 <li><strong>Curve fitting threshold:</strong> regulates the tendency of the vectorizer to use straight lines
                     vs
                     curves to fit the cell colony borders, as previously explained.
                 </li>
-                <li><strong>Magic numnber:</strong> just leave this at 6.2 ok?</li>
-                <li><strong>Actual cell size :</strong> this translates cell units to actual millimeters for SVG download,
+                <li><strong>Magic number:</strong> just leave this at 6.2 ok?</li>
+                <li><strong>Actual cell size:</strong> this translates cell units to actual millimeters for SVG download,
                     and to
                     pixels for preview. See below for details.
                 </li>
-                <li><strong>Cell preview scale :</strong> this translates cell units to pixels for the colored, grid world
+                <li><strong>Cell preview scale:</strong> this translates cell units to pixels for the colored, grid world
                     preview. Each cell will be represented by a
-                    <strong>Cell preview scale :</strong> x <strong>Cell preview scale :</strong> pixels square. Has no
-                    effect in
+                    <strong>Cell preview scale</strong> x <strong>Cell preview scale</strong> pixels square. Has no
+                    effect on
                     the actual vectorized jigsaw, this is just for visualization.
                 </li>
             </ul>
@@ -1478,16 +1480,16 @@
                 step-by-step growth, or by pressing <strong>Start Automatic Growth</strong>
                 and letting the computer automatically do the step-by-step growth as fast as it can. Once you're satisfied,
                 <strong>Stop Automatic Growth</strong> if it was enabled, and download your
-                results in SVG, ready to lasercut. If you don't like what you see, simply re-adjust the parameters if you
+                results in SVG, ready to laser cut. If you don't like what you see, simply re-adjust the parameters if you
                 want and
-                press <strong>Generate Jigsaw</strong> to start from scrath,
-                or just change any parameter (except Columns, Rows, Grid size and Initial grid position noise) and keep
+                press <strong>Generate Jigsaw</strong> to start from scratch,
+                or just change any parameter (except Columns, Rows, Grid size, and Initial grid position noise) and keep
                 growing
                 from there. If you press <strong>Generate Jigsaw</strong> to start from scratch,
                 everything you had is lost forever. There's no way to save anything, except for the SVG output.
             </p>
             <p>
-                The generator will tell you the jigsaw dimensions and total piece count. The dimenions, in millimeters, are
+                The generator will tell you the jigsaw dimensions and total piece count. The dimensions, in millimeters, are
                 calculated as follows:
             </p>
             <ul>
@@ -1516,8 +1518,8 @@
                 strokes, and it may have holes inside. The SVG border file will be preprocessed before generating the
                 jigsaw. First, your SVG file will be flattened. That means that all the SVG transforms
                 will be applied and burned in, and all the stroke and fill settings will be removed. Every element (basic
-                shapes, paths) will be stripped of fill and stroke style attributes and set to no fill and basic black
-                strole. The contents of the files will be moved to the upper left corner and the extents of the drawing will
+                shapes, paths) will be stripped of fill and stroke style attributes and set to no fill and a basic black
+                stroke. The contents of the files will be moved to the upper left corner and the extent of the drawing will
                 be set to exactly contain all the elements, like this:
             </p>
             <table class="center">
@@ -1549,7 +1551,7 @@
                             <img src="assets/adjusted.svg" style="border-style: dotted" width="400"
                                 title="Border position normalized">
                             <figcaption>
-                                Border elements position normalized and extents adjusted
+                                Border elements position normalized and extent adjusted
                             </figcaption>
                         </figure>
                     </td>
@@ -1563,7 +1565,7 @@
             <p>
                 After the border is preprocessed, a grid world will be created based on the border size, interpreted as
                 millimeters, and the <strong>Actual cell size </strong>parameter. For example, if the normalized
-                border's extents are 200 by 100 units, it will be interpreted as 200 x 100 mm. If the <strong>Actual cell
+                border's extent is 200 by 100 units, it will be interpreted as 200 x 100 mm. If the <strong>Actual cell
                     size</strong> is 1 mm, a rectangular grid world of 200 by 100 cells will be created. If <strong>Actual
                     cell size</strong> were 2mm,
                 a 100 by 50 cell world would be created instead. Then, the border will be rastered on top of the grid world.
@@ -1577,7 +1579,7 @@
             </figure>
             <p>
                 Once the cell borders are established, a flood-fill algorithm is executed to try to distinguish inside from
-                outside, and generate the final growth mask for for the custom border, like this:
+                outside, and generate the final growth mask for the custom border, like this:
             </p>
             <figure>
                 <img src="assets/bordermask.png" width="600" title="Custom Border mask">
@@ -1596,14 +1598,14 @@
                 </figcaption>
             </figure>
             <p>
-                Hopefully, after this explanation on how things work, you should have grasped an intuition on what kind of
+                Hopefully, after this explanation of how things work, you should have grasped an intuition on what kind of
                 border files will work and not work.
                 You may use <a href="https://inkscape.org">Inkscape</a> or any other vector graphics editor to check your
                 border beforehand. Select every element
-                of the border file, remove fill and set stroke to a simple black line. If you see something with clearly
+                of the border file, remove fill and set the stroke to a simple black line. If you see something with clearly
                 defined inside and outside areas, with no intersecting
                 contours, then it should work well. Anything else should be simplified before. As you may have already
-                guessed, whimsical pieces drawn inside of the border will work just fine (unles they're too intrincate...).
+                guessed, whimsical pieces drawn inside of the border will work just fine (unless they're too intricate...).
                 In fact, the inside part of the example
                 border could be considered a whimsical piece.
             </p>
@@ -1611,7 +1613,7 @@
                 The vectorizing process works exactly the same in this mode as it does in rectangular mode, but the custom
                 border is also drawn. There's a quirk, though.
                 As the cells live in a discrete, grid world, the region borders will start and end at cell boundaries, and
-                not necesarily exactly over the custom border.
+                not necessarily exactly over the custom border.
                 If you don't do anything else, this is the result of the vectorization process for a custom border jigsaw:
             </p>
             <figure>
@@ -1629,16 +1631,66 @@
             <p>
                 As a final note, if you want to cut over a print and you have traced out the outline of your image and want
                 to preserve it as-is with no scaling, you should set the SVG units
-                to mm , the extents to exactly surround the border and the <strong>Custom border scale factor</strong> to 1.
-                Then, the exported jigsaw will have the exact same dimensions of the
+                to mm, the extent to exactly surround the border and the <strong>Custom border scale factor</strong> to 1.
+                Then, the exported jigsaw will have the exact same dimensions as the
                 border and will be left untouched (except for the style normalization).
             </p>
             <p>
                 The settings work essentially in the same way as they do for rectangular border mode. Rows and Columns can
                 no longer be adjusted, as these
-                are calculated based on the border dimensions as explained above. The meaning of <strong>Actual cell size
-                </strong> also changes, as explained
+                are calculated based on the border dimensions as explained above. The meaning of <strong>Actual cell size</strong> also changes, as explained
                 above. Also, there's a file picker button in case you want to switch the custom border to a different one.
+            </p>
+            <h2>FAQ</h2>
+            <p><strong>Where are by border files uploaded?</strong></p>
+            <p>Nowhere. It all stays on your computer, the border file is just loaded into your browser and used exclusively within the browser. You're basically 
+                downloading a self-contained webapp and executing it locally, in fact you can download this for totally offline use, see below.
+            </p>
+            <p><strong>Is this free?</strong></p>
+            <p>Yes, it is. The code falls under the <a href="https://raw.githubusercontent.com/proceduraljigsaw/OrganicPuzzleJs/main/LICENSE">MIT license</a></p>
+            <p><strong>Where can I get the code?</strong></p>
+            <p><a href="https://github.com/proceduraljigsaw/OrganicPuzzleJs">Here</a></p>
+            <p><strong>Can I use it offline somehow?</strong></p>
+            <p>Sure, this is all executed in your browser. Just clone the github repo or right-click save the web from your browser. It will download all the required assets,
+                and you may run it by just opening index.html using your favorite browser.
+            </p>
+            <p><strong>Which browsers are supported?</strong></p>
+            <p>As far as I know, any modern browser should work. It's been tested on the most up to date versions (April 2022) of Firefox, Chrome, Edge, and Safari.
+            </p>
+            <p><strong>Is this all your job?</strong></p>
+            <p>No, I use two third-party libraries.</p>
+                <ul>
+                    <li>
+                        A heavily modified and stripped down version of <a href="https://github.com/jankovicsandras/imagetracerjs">imagetracerjs</a> 1.2.6 for vectorization.
+                    </li>
+                    <li>
+                        <a href="https://gist.github.com/timo22345/9413158">Flatten.js</a> for SVG transform flattening.
+                    </li>
+                </ul>
+            <p><strong>Any known issues?</strong></p>
+            <p>
+                Many. This should be considered beta software, use with caution. I recommend cutting in cheap material before committing for a design, to see any
+                potential issues before wasting expensive material. I'm not responsible for any material waste. Here's a list of known issues:
+            </p>
+            <ul>
+                <li>
+                    Sometimes the vectorizer creates micro-loops at border pieces in custom border mode.
+                </li>
+                <li>
+                    There's a very rare case that's not well handled by the vectorizer, making it miss a line and leaving one piece open. It's extremely rare, but it's 
+                    in the pipeline for fixing.
+                </li>
+                <li>
+                    I really don't know how or why the growth algorithm works. I came into it by accident, while trying different approaches, and I'm not really sure why 
+                    setting a parameter to 6.2 makes things work.
+                </li>
+            </ul>
+            <p><strong>Do you have any other jigsaw generators for different jigsaw styles?</strong></p>
+            <p>Sure, <a href="https://github.com/proceduraljigsaw">go suit yourself</a> </p>
+            <p><strong>I meant normal puzzles, with rectangular pieces with tabs</strong></p>
+            <p>Then unfortunately no, but draradech <a href="https://draradech.github.io/jigsaw/index.html">has a very good one</a>, and it's also free. </p>
+            <p><strong>How can I contact you?</strong></p>
+            <p>Use whatever tools github provides <a href="https://github.com/proceduraljigsaw/OrganicPuzzleJs">here</a> to report bugs or whatever you find.
             </p>
         </div>
     </div>
