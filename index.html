@@ -824,6 +824,15 @@
                 path.isholepath = false;
                 var minx = 1e9, miny = 1e9, maxx = 0, maxy = 0;
                 e.forEach((p) => {
+                    // if(path.points.length){
+                    //     var lp = path.points[path.points.length-1];
+                    //     var deltax = (p.col -lp.x)/50;
+                    //     var deltay = (p.row -lp.y)/50;
+                    //     for (var i =1; i<50;i++){
+                    //         path.points.push({ x: lp.x + i*deltax, y: lp.y+i*deltay });
+                    //         //console.log({ x: lp.x + i*deltax, y: lp.y+i*deltay })
+                    //     }
+                    // }
                     path.points.push({ x: p.col, y: p.row });
                     if (p.col > maxx) maxx = p.col;
                     if (p.col < minx) minx = p.col;
@@ -833,7 +842,7 @@
                 path.boundingbox = [minx, miny, maxx, maxy];
                 paths.push(path);
             });
-            var options = { pal: palette, scale: cellscale, ltres: 0.00001, qtres: parseFloat($("qtres").value), strokewidth: .5, linefilter: false, rightangleenhance: false, layering: 0, layercontainerid: "layercnt" };
+            var options = { pal: palette, scale: cellscale, ltres: parseFloat($("ltres").value), qtres: parseFloat($("qtres").value), strokewidth: .5, linefilter: false, rightangleenhance: false, layering: 0, layercontainerid: "layercnt" };
 
             // Getting ImageData from canvas with the helper function getImgdata().
             [svgstr, svgstrsave] = ImageTracer.pathsToSVG(paths, customborder, automata.cornertable, automata.columns, automata.rows, options);
@@ -1013,6 +1022,10 @@
             <tr>
                 <td>Curve fitting threshold (>0, decimal):</td>
                 <td><input id="qtres" type="text" value="1" size="5"/></td>
+            </tr>
+            <tr>
+                <td>Straight line fitting threshold (>0, decimal):</td>
+                <td><input id="ltres" type="text" value="0.00001" size="5"/></td>
             </tr>
             <tr>
                 <td>Magic number(just leave it at 6.2):</td>
@@ -1642,7 +1655,7 @@
                 above. Also, there's a file picker button in case you want to switch the custom border to a different one.
             </p>
             <h2>FAQ</h2>
-            <p><strong>Where are by border files uploaded?</strong></p>
+            <p><strong>Where are my border files uploaded?</strong></p>
             <p>Nowhere. It all stays on your computer, the border file is just loaded into your browser and used exclusively within the browser. You're basically 
                 downloading a self-contained webapp and executing it locally, in fact you can download this for totally offline use, see below.
             </p>
