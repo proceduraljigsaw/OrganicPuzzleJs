@@ -63,15 +63,22 @@
         var xmldoc = null;
         var timerID;
         var autogrowth = false;
+        var seed = 1;
         function $(id) { return document.getElementById(id); }
         function random() {
-            return Math.random();
+            if ($("ndr").checked) {
+                return random();
+            } else {
+                var x = Math.sin(seed) * 10000; seed += 1; return x - Math.floor(x);
+            }
         }
+        function updateseed() { $("_seed").value = $("seed").value; }
+        function update_seed() { var val = parseInt($("_seed").value); if (!isNaN(val)) { $("seed").value = val; } updateseed(); }
         function uniform(min, max) { var ran = random(); return min + ran * (max - min); }
         function rbool() { return random() > 0.5; }
         function Shuffle(arr) {
             for (var i = arr.length - 1; i > 0; i--) {
-                var j = Math.floor(Math.random() * (i + 1)); //random index
+                var j = Math.floor(random() * (i + 1)); //random index
                 [arr[i], arr[j]] = [arr[j], arr[i]]; // swap
             }
         }
@@ -411,22 +418,23 @@
                             this.grid[row][col] = -other_color;
                             growth.push({ row: row, col: col, val: other_color });
                         }
-                    } else if (prefill || Math.random() < parseFloat($("growth_prob").value)) {
+                    } else if (prefill || random() < parseFloat($("growth_prob").value)) {
+
                         //We have enough neighbors, explore them
                         neigh_coord.forEach((neighbor) => {
+                            var neighborval = this.grid[neighbor.row][neighbor.col];
 
-                            if (prefill || neighbor.row == row || neighbor.col == col) {
+                            if (!this.maskgrid[neighbor.row][neighbor.col] && (prefill || ((Math.abs(currentcellval) != Math.abs(neighborval)) && (neighbor.row == row || neighbor.col == col)))) {
                                 var dist2seed = Math.sqrt((neighbor.row - seed.row) ** 2 + (neighbor.col - seed.col) ** 2);
-                                var neighborval = this.grid[neighbor.row][neighbor.col];
-
-                                if (!this.maskgrid[neighbor.row][neighbor.col] && (prefill || (dist2seed < this.max_growth_dist))) {
+                          
+                                if (prefill || (dist2seed < this.max_growth_dist)) {
                                     //We're close enough to the seed point, lets try to grow
 
                                     if (!neighborval) { //neighbor is empty 
                                         //Just eat it  
                                         growth.push({ row: neighbor.row, col: neighbor.col, val: currentcellval });
                                         grown.push({ row: neighbor.row, col: neighbor.col });
-                                    } else if (!prefill && neighborval > 0 && (Math.abs(currentcellval) != Math.abs(neighborval))) { //neighbor is taken by other piece
+                                    } else if (!prefill && neighborval > 0) { //neighbor is taken by other piece
                                         //see if we can kill it and overtake
                                         var nnc = this.neighbor_coords(neighbor.row, neighbor.col);
                                         //get neighbor's neighbors of the same color;
@@ -690,6 +698,9 @@
         }
 
         function generate() {
+            update_seed();
+            seed = parseInt($("_seed").value);
+            console.log(seed)
             var pixelsize = parseInt($("pixelscell").value);
             var rows = parseInt($("nrows").value);
             var cols = parseInt($("ncols").value);
@@ -800,7 +811,7 @@
             var rows = automata.rows;
             var cols = automata.columns;
             var pixelsize = parseInt($("pixelscell").value);
-            var cellscale = parseInt($("cell_scale").value);
+            var cellscale = parseFloat($("cell_scale").value);
             canvas = $("automata");
             canvas.setAttribute("width", cols * pixelsize + 5);
             canvas.setAttribute("height", rows * pixelsize + 5);// * 2);
@@ -1026,7 +1037,7 @@
     </script>
 </head>
 
-<body>
+<body onload="$('seed').value = random() * 10000; updateseed();">
 
     <div class="tab">
         <button class="tablinks" id="default" onclick="switchtab(event, 'rect')">Rectangular border</button>
@@ -1050,6 +1061,15 @@
             <tr class="rect">
                 <td>Rows:</td>
                 <td><input id="nrows" onchange="updatedimensions(0)" type="text" value="100" size="5" /> cells</td>
+            </tr>
+            <tr>
+                <td>Seed:</td>
+                <td><input id="_seed" type="text" value="0" onchange="update_seed()" /></td>
+                <td><input id="seed" type="range" value="0" min="0" max="9999" step="1" onchange="updateseed()" /></td>
+            </tr>
+            <tr>
+                <td>Use non-deterministic randomness:</td>
+                <td><input id="ndr" type="checkbox" />(seed is ignored if ticked)</td>
             </tr>
             <tr>
                 <td>Grid size:</td>
