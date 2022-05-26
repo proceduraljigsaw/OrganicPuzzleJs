@@ -59,7 +59,24 @@
     <script type="text/javascript" src="imagetracer.js"></script>
     <script type="text/javascript" src="flatten.js"></script>
     <script type="text/javascript">
-
+        const lut = [false, true, true, true, true, false, true, true, true, true, false, true, false, false,
+            false, true, true, false, false, false, true, false, true, true, false, false, false, false,
+            false, false, false, true, true, false, false, false, false, false, false, false, true, true,
+            false, true, false, false, false, true, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false, true, true, false, false, false, false, false,
+            false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false, false, false, false, false, false, true, false,
+            false, false, false, false, false, false, true, true, false, true, false, false, false, true,
+            false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+            false, false, true, false, false, false, false, false, false, false, false, false, false, false,
+            false, false, false, false, true, false, false, false, true, false, true, true, false, false, false,
+            false, false, false, false, true, false, false, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, false, true, true, false, false, false, false, false, false, false, false,
+            false, false, false, false, false, false, false, true, false, false, false, true, false, true, true, false,
+            false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, true,
+            true, false, true, false, false, false, true, true, false, false, false, true, false, true, true, true, true,
+            false, false, true, true, false, false];
         var xmldoc = null;
         var timerID;
         var autogrowth = false;
@@ -67,7 +84,7 @@
         function $(id) { return document.getElementById(id); }
         function random() {
             if ($("ndr").checked) {
-                return random();
+                return Math.random();
             } else {
                 var x = Math.sin(seed) * 10000; seed += 1; return x - Math.floor(x);
             }
@@ -271,7 +288,7 @@
                 }
                 growth.forEach((grow) => {
                     this.grid[grow.row][grow.col] = grow.val;
-                    var neigh = this.neighbor_coords(grow.row, grow.col)
+                    var neigh = this.neighbor_coords(grow.row, grow.col, false).c;
                     neigh.forEach((n) => {
                         this.lockedgrid[n.row][n.col] = 0;
                     });
@@ -284,7 +301,7 @@
 
             mindistandclosestpoint2path(corner) {
 
-                var neighbor_coords = this.neighbor_coords(corner.row, corner.col);
+                var neighbor_coords = this.neighbor_coords(corner.row, corner.col, false).c;
                 neighbor_coords.push(corner);
                 let mind = 1e12
                 let cp = null;
@@ -308,18 +325,24 @@
             }
 
 
-            neighbor_coords(row, col) {
+            neighbor_coords(row, col, calc_weights) {
                 var coords = [];
+                var weight = 0;
                 for (var i = -1; i < 2; i++) {
                     for (var j = -1; j < 2; j++) {
                         var pr = row + i;
                         var pc = col + j;
                         if ((i || j) && pr >= 0 && pc >= 0 && pr < this.rows && pc < this.columns) {
                             coords.push({ row: pr, col: pc });
+                            if (calc_weights && (Math.abs(this.grid[pr][pc]) == Math.abs(this.grid[row][col]))) {
+                                var w = i + j * 3 + 4;
+                                w = w > 4 ? w - 1 : w;
+                                weight += (1 << w);
+                            }
                         }
                     }
                 }
-                return coords;
+                return { c: coords, w: weight };
             }
 
             findcorners(customborder) {
@@ -388,7 +411,7 @@
             }
             grow(row, col, growth, context, prefill) {
 
-                var neigh_coord = this.neighbor_coords(row, col);
+                var neigh_coord = this.neighbor_coords(row, col, false).c;
                 var grown = [];
                 var currentcellval = this.grid[row][col]
                 var seed = this.seedpoints.find((sp) => sp.val == currentcellval);
@@ -426,7 +449,7 @@
 
                             if (!this.maskgrid[neighbor.row][neighbor.col] && (prefill || ((Math.abs(currentcellval) != Math.abs(neighborval)) && (neighbor.row == row || neighbor.col == col)))) {
                                 var dist2seed = Math.sqrt((neighbor.row - seed.row) ** 2 + (neighbor.col - seed.col) ** 2);
-                          
+
                                 if (prefill || (dist2seed < this.max_growth_dist)) {
                                     //We're close enough to the seed point, lets try to grow
 
@@ -436,24 +459,28 @@
                                         grown.push({ row: neighbor.row, col: neighbor.col });
                                     } else if (!prefill && neighborval > 0) { //neighbor is taken by other piece
                                         //see if we can kill it and overtake
-                                        var nnc = this.neighbor_coords(neighbor.row, neighbor.col);
-                                        //get neighbor's neighbors of the same color;
-                                        nnc = nnc.filter(nn => (Math.abs(this.grid[nn.row][nn.col]) == neighborval));
-                                        var nnc_len = nnc.length;
-                                        if (nnc_len > 2 && nnc_len < 6) {
-                                            var nnnc_len = 0;
-                                            nnc.forEach((n) => {
-                                                var nnnc = this.neighbor_coords(n.row, n.col);
-                                                nnnc = nnnc.filter(nn => (Math.abs(this.grid[nn.row][nn.col]) == neighborval));
-                                                nnnc_len += nnnc.length;
-                                            });
+                                        var nnc_cw = this.neighbor_coords(neighbor.row, neighbor.col, true);
+                                        if (lut[nnc_cw.w]) {
+                                            var nnc = nnc_cw.c
+
+                                            //get neighbor's neighbors of the same color;
+                                            nnc = nnc.filter(nn => (Math.abs(this.grid[nn.row][nn.col]) == neighborval));
+                                            var nnc_len = nnc.length;
+                                            if ($("ppg").checked || nnc_len < 6) {
+                                                var nnnc_len = 0;
+                                                nnc.forEach((n) => {
+                                                    var nnnc = this.neighbor_coords(n.row, n.col).c;
+                                                    nnnc = nnnc.filter(nn => (Math.abs(this.grid[nn.row][nn.col]) == neighborval));
+                                                    nnnc_len += nnnc.length;
+                                                });
 
 
-                                            //I don't know how the 6.2 thing works, but it seems to work. This algorithm was empirically found
-                                            if (nnnc_len / nnc_len > parseFloat($("mnumber").value)) {
-                                                //console.log(nnnc_len + " " + nnc_len + " " + neighborval);
-                                                growth.push({ row: neighbor.row, col: neighbor.col, val: currentcellval });
-                                                grown.push({ row: neighbor.row, col: neighbor.col });
+                                                //I don't know how the 6.2 thing works, but it seems to work. This algorithm was empirically found
+                                                if (nnnc_len / nnc_len > parseFloat($("mnumber").value)) {
+                                                    //console.log(nnnc_len + " " + nnc_len + " " + neighborval);
+                                                    growth.push({ row: neighbor.row, col: neighbor.col, val: currentcellval });
+                                                    grown.push({ row: neighbor.row, col: neighbor.col });
+                                                }
                                             }
                                         }
                                     }
@@ -461,9 +488,9 @@
                                 }
                             }
                         });
-                        if (!prefill && grown.length == 0) {
-                            this.lockedgrid[row][col] = 1;
-                        }
+                        // if (!prefill && grown.length == 0) {
+                        //    // this.lockedgrid[row][col] = 1;
+                        // }
                     }
 
                     //TODO: If your only growth is a corner, don't grow DONE
@@ -700,7 +727,6 @@
         function generate() {
             update_seed();
             seed = parseInt($("_seed").value);
-            console.log(seed)
             var pixelsize = parseInt($("pixelscell").value);
             var rows = parseInt($("nrows").value);
             var cols = parseInt($("ncols").value);
@@ -1098,6 +1124,10 @@
             <tr>
                 <td>Corner pre-smooth:</td>
                 <td><input id="cps" type="checkbox" /></td>
+            </tr>
+            <tr>
+                <td>"Pointy" piece growth:</td>
+                <td><input id="ppg" type="checkbox" /></td>
             </tr>
             <tr>
                 <td>Magic number(just leave it at 6.2):</td>
