@@ -166,7 +166,7 @@
                 // console.log("V", minx, maxx, miny, maxy);
                 allpts.forEach((p) => {
                     // console.log(this.borderdistgrid.length, this.borderdistgrid[0].length,p.x,p.y)
-                    this.borderdistgrid[p.y][p.x] = p;
+                    this.borderdistgrid[p.y][p.x] = { rx: p.rx + 0.5, ry: p.ry + 0.5 };
                     this.maskgrid[p.y][p.x] = 1;
 
                 });
@@ -669,7 +669,7 @@
                 }
             }
 
-            paintmask(context) {
+            paintmask(context, paths) {
                 var pixelsize = parseInt($("pixelscell").value);
                 context.clearRect(0, 0, $("automata").width, $("automata").height);
                 context.font = "12px Arial";
@@ -694,6 +694,10 @@
 
 
                     }
+                }
+                for (let p of paths) {
+                    var p2d = new Path2D(p.getAttribute("d"));
+                    context.stroke(p2d);
                 }
             }
         }
@@ -797,8 +801,8 @@
 
             if (customborder.paths) {
                 automata.fillmask(customborder.paths, cell_scale);
-                // pgroup.setAttribute("transform", "scale(" + parseFloat($("cell_scale").value) + ")");
-                // flatten($("svgcontainer"), false, true);
+                pgroup.setAttribute("transform", "translate(" + (cell_scale / 2) + "," + (cell_scale / 2) + ")");
+                flatten($("svgcontainer"), false, true);
             }
 
 
@@ -813,7 +817,7 @@
 
 
                 // if (customborder.paths) {
-                //     automata.paintmask(context);
+                //     automata.paintmask(context,customborder.paths);
                 // }
                 automata.gridseed(gsize, gnoise);
                 palette = ImageTracer.generatepalette(automata.seedpoints.length + 1);
@@ -907,21 +911,7 @@
                 }
 
                 paths.push(path);
-                // context.strokeStyle = "blue";
-                // for (var i = 0; i < path.points.length - 1; i++) {
-
-                //     var p = path.points[i];
-                //     var q = path.points[i + 1];
-                //     if (p.x == q.x && p.y == q.y) {
-                //         console.log("fail");
-                //     }
-                //     context.lineWidth = 2;
-                //     context.beginPath();
-                //     context.moveTo(p.x * pixelsize, p.y * pixelsize);
-                //     context.lineTo(q.x * pixelsize, q.y * pixelsize);
-                //     context.stroke();
-                //     context.strokeStyle = "red";
-                // }
+  
             });
             var options = { pal: palette, scale: cellscale, ltres: parseFloat($("ltres").value), qtres: parseFloat($("qtres").value), strokewidth: .5, linefilter: false, rightangleenhance: false, layering: 0, layercontainerid: "layercnt" };
 
@@ -936,6 +926,21 @@
             }
             // Appending SVG
             ImageTracer.appendSVGString(svgstr, 'svgcontainer');
+
+            if ($("stv").checked) {
+                var parser = new DOMParser();
+                xmldoc = parser.parseFromString(svgstr, "image/svg+xml");
+                var svgjig = xmldoc.getElementsByTagName("svg")[0];
+                var outpaths = svgjig.getElementsByTagName("path");
+                context.strokeStyle = "red";
+                context.lineWidth = 1;
+                context.scale((pixelsize / cellscale), (pixelsize / cellscale))
+                for (let p of outpaths) {
+                    var p2d = new Path2D(p.getAttribute("d"));
+                    context.stroke(p2d);
+                }
+            }
+            updatedimensions();
         }
 
 
@@ -1128,6 +1133,10 @@
             <tr>
                 <td>"Pointy" piece growth:</td>
                 <td><input id="ppg" type="checkbox" /></td>
+            </tr>
+            <tr>
+                <td>Show traced vectors over preview</td>
+                <td><input id="stv" type="checkbox" /></td>
             </tr>
             <tr>
                 <td>Magic number(just leave it at 6.2):</td>
@@ -1896,7 +1905,7 @@
         </div>
     </div>
 
-
+    
     <script>
         document.getElementById("default").click();
     </script>
