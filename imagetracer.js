@@ -229,7 +229,7 @@ For more information, please refer to http://unlicense.org/
                     }// End of red loop
 
                     // Rest is random
-                    for (rcnt = 0; rcnt < rndnum; rcnt++) { palette.push({ r: Math.floor(Math.random() * 255), g: Math.floor(Math.random() * 255), b: Math.floor(Math.random() * 255), a: Math.floor(Math.random() * 255) }); }
+                    for (rcnt = 0; rcnt < rndnum; rcnt++) { palette.push({ r: Math.floor(random() * 255), g: Math.floor(random() * 255), b: Math.floor(random() * 255), a: Math.floor(random() * 255) }); }
 
                 }// End of numberofcolors check
 

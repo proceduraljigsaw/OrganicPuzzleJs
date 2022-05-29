@@ -932,8 +932,8 @@
                 xmldoc = parser.parseFromString(svgstr, "image/svg+xml");
                 var svgjig = xmldoc.getElementsByTagName("svg")[0];
                 var outpaths = svgjig.getElementsByTagName("path");
-                context.strokeStyle = "red";
-                context.lineWidth = 1;
+                context.strokeStyle = "black";
+                context.lineWidth = 2*(cellscale/pixelsize);
                 context.scale((pixelsize / cellscale), (pixelsize / cellscale))
                 for (let p of outpaths) {
                     var p2d = new Path2D(p.getAttribute("d"));
