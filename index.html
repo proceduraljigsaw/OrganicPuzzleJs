@@ -765,8 +765,10 @@
 
                 document.body.removeChild(svgdata);
                 //De-viewboxfy
+                if($("abv").checked){
                 pgroup.setAttribute("transform", "matrix(" + vt.a + "," + vt.b + "," + vt.c + "," + vt.d + "," + vt.e + "," + vt.f + ")");
                 flatten($("svgcontainer"), false, true);
+                }
                 //Scale
                 pgroup.setAttribute("transform", "scale(" + parseFloat($("cbsf").value) + ")");
                 flatten($("svgcontainer"), false, true);
@@ -1085,6 +1087,7 @@
             <tr class="custom">
                 <td>SVG border file:</td>
                 <td><input type="file" id="borderfile" accept=".svg" onchange="loadborder()"></td>
+                <td><input id="abv" type="checkbox" />Use viewbox</td>
             </tr>
             <tr class="custom">
                 <td>Custom border scale factor:</td>
